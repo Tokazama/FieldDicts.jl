@@ -34,12 +34,25 @@ true
 
 ```
 
-These fields can be accessed via indexing or the dot-property notation.
+The values are similarly accessible through the dictionary interface.
+```jldoctest fielddict_docstring
+julia> collect(values(d)) == [1, 2]
+true
+
+```
+
+These fields can be accessed via traditional dictionary-like access or the dot-property notation.
 ```jldoctest fielddict_docstring
 julia> d[:x] = 1;
 
 julia> d.x == d[:x] == 1
 true
+
+julia> get(d, :y, 3)
+2.0
+
+julia> get(d, :z, 3)
+3
 
 ```
 
@@ -107,43 +120,31 @@ Base.keys(x::FieldDict{V,P}) where {V,P} = fieldnames(P)
 Base.propertynames(x::FieldDict) = keys(x)
 
 @inline Base.getproperty(x::FieldDict, s::Symbol) = getfield(getfield(x, :parent), s)
-@inline Base.getproperty(x::FieldDict, i::Int) = getfield(getfield(x, :parent), i)
 
-@inline Base.setproperty!(x::FieldDict, s::Symbol, v) = setfield!(getfield(x, :parent), v, s)
-@inline Base.setproperty!(x::FieldDict, i::Int, v) = setfield!(getfield(x, :parent), v, i)
+@inline Base.setproperty!(x::FieldDict, s::Symbol, v) = setfield!(getfield(x, :parent), s, v)
 
 @inline Base.getindex(x::FieldDict, s::Symbol) = getproperty(x, s)
-@inline Base.getindex(x::FieldDict, i::Int) = getproperty(x, i)
 
-@inline Base.setindex!(x::FieldDict, v, s::Symbol) = setproperty!(x, v, s)
-@inline Base.setindex!(x::FieldDict, v, i::Int) = setproperty!(x, v, i)
+@inline Base.setindex!(x::FieldDict, v, s::Symbol) = setproperty!(x, s, v)
 
-@inline function _get_field_dict(x, i::Int, default)
-    if isdefined(x, i)
-        return getfield(x, i)
-    else
-        return default
-    end
-end
-@inline function _get_field_dict!(x, i::Int, default)
-    if isdefined(x, i)
-        return getfield(x, i)
-    else
-        setfield!(x, i, default)
-        return default
-    end
-end
 @inline function Base.get(x::FieldDict{V,P}, s::Symbol, default) where {V,P}
-    _get_field_dict(getfield(x, 1), Base.fieldindex(P, s, false), default)
-end
-@inline function Base.get(x::FieldDict{V,P}, i::Integer, default) where {V,P}
-    _get_field_dict(getfield(x, 1), Int(i), default)
+    p = getfield(x, 1)
+    i = Base.fieldindex(P, s, false)
+    if isdefined(p, i)
+        return getfield(p, i)
+    else
+        return default
+    end
 end
 @inline function Base.get!(x::FieldDict{V,P}, s::Symbol, default) where {V,P}
-    _get_field_dict!(getfield(x, 1), Base.fieldindex(P, s, false), default)
-end
-@inline function Base.get!(x::FieldDict{V,P}, i::Integer, default) where {V,P}
-    _get_field_dict!(getfield(x, 1), Int(i), default)
+    p = getfield(x, 1)
+    i = Base.fieldindex(P, s, false)
+    if isdefined(p, i)
+        return getfield(p, i)
+    else
+        setfield!(p, i, default)
+        return default
+    end
 end
 
 end
