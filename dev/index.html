@@ -14,8 +14,16 @@ FieldDict{Real, Foo} with 2 entries:
   :y =&gt; 2.0
 </code></pre><p>The keys and properties are the same as the underlying structures field names.</p><pre><code class="language-julia-repl hljs">julia&gt; keys(d) == propertynames(d) == (:x, :y)
 true
-</code></pre><p>These fields can be accessed via indexing or the dot-property notation.</p><pre><code class="language-julia-repl hljs">julia&gt; d[:x] = 1;
+</code></pre><p>The values are similarly accessible through the dictionary interface.</p><pre><code class="language-julia-repl hljs">julia&gt; collect(values(d)) == [1, 2]
+true
+</code></pre><p>These fields can be accessed via traditional dictionary-like access or the dot-property notation.</p><pre><code class="language-julia-repl hljs">julia&gt; d[:x] = 1;
 
 julia&gt; d.x == d[:x] == 1
 true
-</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Tokazama/FieldDicts.jl/blob/8cbeaea70ae0b0a193e8ee6759808a7980f59f88/src/FieldDicts.jl#L5-L46">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.14 on <span class="colophon-date" title="Wednesday 9 March 2022 17:54">Wednesday 9 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+
+julia&gt; get(d, :y, 3)
+2.0
+
+julia&gt; get(d, :z, 3)
+3
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Tokazama/FieldDicts.jl/blob/221362acdff9b4a11d0af5f0fc96e041e958b86a/src/FieldDicts.jl#L5-L59">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.14 on <span class="colophon-date" title="Wednesday 9 March 2022 18:48">Wednesday 9 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
