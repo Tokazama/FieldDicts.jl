@@ -1,6 +1,5 @@
 using FieldDicts
+using Documenter: doctest
 using Test
 
-@testset "FieldDicts.jl" begin
-    # Write your tests here.
-end
+doctest(FieldDicts)
