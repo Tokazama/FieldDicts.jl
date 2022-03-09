@@ -65,8 +65,6 @@ struct FieldDict{V,P} <: AbstractDict{Symbol,V}
     FieldDict(p::P) where {P} = FieldDict{_struct_eltype(P)}(p)
 end
 
-Base.parent(x::FieldDict) = getfield(x, :parent)
-
 Base.length(x::FieldDict{V,P}) where {V,P} = fieldcount(P)
 
 _struct_eltype(::Type{T}) where {T} = __struct_eltype(T, Val(fieldcount(T)))
