@@ -28,6 +28,8 @@ d = FieldDict(x)
 d[:x] = 1
 
 @test get!(() -> 2, d, :x) == 1
+@test get(() -> 2, d, :x) == 1
+@test get(() -> 2, d, :z) == 2
 get!(() -> x, d, :z)
 @test x.x == 1
 
