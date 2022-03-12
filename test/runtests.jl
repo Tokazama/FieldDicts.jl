@@ -22,5 +22,14 @@ d[:x] = 1
 @test get!(d, :x, 2) == 1
 @test get!(d, :z, x).x == 1
 
+x = Foo()
+d = FieldDict(x)
+
+d[:x] = 1
+
+@test get!(() -> 2, d, :x) == 1
+get!(() -> x, d, :z)
+@test x.x == 1
+
 doctest(FieldDicts)
 

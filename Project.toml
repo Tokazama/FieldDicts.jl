@@ -1,7 +1,7 @@
 name = "FieldDicts"
 uuid = "5ac04fe7-78fe-4eb3-ac2d-702565c067c7"
 authors = ["Zachary P. Christensen <zchristensen7@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"

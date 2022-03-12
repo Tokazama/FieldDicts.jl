@@ -144,5 +144,25 @@ end
         return default
     end
 end
+@inline function Base.get(f::Union{Function,Type}, x::FieldDict{V,P}, s::Symbol) where {V,P}
+    p = getfield(x, 1)
+    i = Base.fieldindex(P, s, false)
+    if isdefined(p, i)
+        return getfield(p, i)
+    else
+        return f()
+    end
+end
+@inline function Base.get!(f::Union{Function,Type}, x::FieldDict{V,P}, s::Symbol) where {V,P}
+    p = getfield(x, 1)
+    i = Base.fieldindex(P, s, false)
+    if isdefined(p, i)
+        return getfield(p, i)
+    else
+        default = f()
+        setfield!(p, i, default)
+        return default
+    end
+end
 
 end
