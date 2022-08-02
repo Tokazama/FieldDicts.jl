@@ -2,6 +2,14 @@ module FieldDicts
 
 export FieldDict
 
+@static if isdefined(Base, Symbol("@assume_effects"))
+    using Base: @assume_effects
+else
+    macro assume_effects(_, ex)
+        :(Base.@pure $(ex))
+    end
+end
+
 """
     FieldDict{V}(x) <: AbstractDict{Symbol,V}
 
@@ -65,65 +73,61 @@ struct FieldDict{V,P} <: AbstractDict{Symbol,V}
     FieldDict(p::P) where {P} = FieldDict{_struct_eltype(P)}(p)
 end
 
-Base.length(x::FieldDict{V,P}) where {V,P} = fieldcount(P)
-
-_struct_eltype(::Type{T}) where {T} = __struct_eltype(T, Val(fieldcount(T)))
-@generated function __struct_eltype(T::DataType, ::Val{N}) where {N}
-    if N === 0
-        return :Any
-    elseif N === 1
-        return :(fieldtype(T, 1))
-    else
-        out = :(fieldtype(T, 1))
-        for i in 2:N
-            out = :(typejoin($out, fieldtype(T, $i)))
-        end
-        return Expr(:block, Expr(:meta, :inline), out)
+@assume_effects :total function _struct_eltype(t::DataType)
+    T = Union{}
+    for i in 1:fieldcount(t)
+        T = Base.promote_typejoin(T, fieldtype(t, i))
     end
+    return T
 end
+
+Base.parent(@nospecialize(x::FieldDict)) = getfield(x, :parent)
+
+Base.length(x::FieldDict) = length(typeof(x))
+Base.length(@nospecialize(T::Type{<:FieldDict})) = fieldcount(fieldtype(T, 1))
 
 @inline function Base.iterate(x::FieldDict{V,P}) where {V,P}
     if fieldcount(P) === 0
         return nothing
     else
-        return (Pair{Symbol,V}(fieldname(P, 1), getfield(getfield(x, :parent), 1)), 2)
+        return (Pair{Symbol,V}(fieldname(P, 1), @inbounds(x[1])), 2)
     end
 end
 @inline function Base.iterate(x::FieldDict{V,P}, state::Int) where {V,P}
     if fieldcount(P) < state
         return nothing
     else
-        return (Pair{Symbol,V}(fieldname(P, state), getfield(getfield(x, :parent), state)), state + 1)
+        return (Pair{Symbol,V}(fieldname(P, state), @inbounds(x[state])), state + 1)
     end
 end
 
 const FieldValues{V,P} = Base.ValueIterator{FieldDict{V,P}}
-@inline function Base.iterate(x::FieldValues{V,P}) where {V,P}
-    if fieldcount(P) === 0
+@inline function Base.iterate(@nospecialize(x::FieldValues))
+    if length(getfield(x, 1)) === 0
         return nothing
     else
-        return (getfield(getfield(getfield(x, :dict), :parent), 1), 2)
+        return (getfield(parent(getfield(x, 1)), 1), 2)
     end
 end
-@inline function Base.iterate(x::FieldValues{V,P}, state::Int) where {V,P}
-    if fieldcount(P) < state
+@inline function Base.iterate(@nospecialize(x::FieldValues), state::Int)
+    if length(getfield(x, 1)) < state
         return nothing
     else
-        return (getfield(getfield(getfield(x, :dict), :parent), state), state + 1)
+        return (getfield(parent(getfield(x, 1)), state), state + 1)
     end
 end
-
-Base.keys(x::FieldDict{V,P}) where {V,P} = fieldnames(P)
+Base.keys(x::FieldDict) = keys(typeof(x))
+Base.keys(@nospecialize T::Type{<:FieldDict}) = fieldnames(fieldtype(T, 1))
 
 Base.propertynames(x::FieldDict) = keys(x)
 
-@inline Base.getproperty(x::FieldDict, s::Symbol) = getfield(getfield(x, :parent), s)
+@inline Base.getproperty(x::FieldDict, i::Symbol) = getindex(x, i)
 
-@inline Base.setproperty!(x::FieldDict, s::Symbol, v) = setfield!(getfield(x, :parent), s, v)
+@inline Base.setproperty!(x::FieldDict, i::Symbol, v) = setindex!(x, v, i)
 
-@inline Base.getindex(x::FieldDict, s::Symbol) = getproperty(x, s)
+Base.@propagate_inbounds Base.getindex(x::FieldDict, i::Union{Symbol,Int}) = getfield(parent(x), i)
 
-@inline Base.setindex!(x::FieldDict, v, s::Symbol) = setproperty!(x, s, v)
+Base.@propagate_inbounds Base.setindex!(x::FieldDict, v, i::Union{Int,Symbol}) = setfield!(parent(x), i, v)
 
 @inline function Base.get(x::FieldDict{V,P}, s::Symbol, default) where {V,P}
     p = getfield(x, 1)
